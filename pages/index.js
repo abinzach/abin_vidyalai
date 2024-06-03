@@ -5,10 +5,12 @@ import TopNavbar from '../components/Navbar';
 
 export default function HomePage() {
   return (
+    <>
+    <TopNavbar />
     <div
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
+      style={{minHeight: '100vh' }}
     >
-      <TopNavbar />
+
       <div
         style={{
           margin: '60px 0px 20px',
@@ -18,5 +20,6 @@ export default function HomePage() {
       </div>
       <Footer />
     </div>
+    </>
   );
 }
