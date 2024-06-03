@@ -1,8 +1,10 @@
 import React from 'react';
-import useWindowWidth from '../hooks/useWindowWidth';
+import PropTypes from 'prop-types';
+import { useWindowWidthContext } from '../../context/WindowWidthContext';
 
 export default function Container({ children }) {
-  const { isSmallerDevice } = useWindowWidth();
+  const { isSmallerDevice } = useWindowWidthContext(); // state being called from context
+
   return (
     <div
       style={{
@@ -16,3 +18,7 @@ export default function Container({ children }) {
     </div>
   );
 }
+
+Container.propTypes = {
+  children: PropTypes.node.isRequired, // Validate that children is a React node and is required
+};

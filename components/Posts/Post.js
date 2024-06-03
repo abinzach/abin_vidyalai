@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -8,6 +9,37 @@ const PostContainer = styled.div(() => ({
   border: '1px solid #ccc',
   borderRadius: '5px',
   overflow: 'hidden',
+}));
+
+const PostHeader = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+  borderBottom: '1px solid #ccc',
+}));
+
+const AvatarBadge = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: 'gray',
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '10px',
+  fontSize: '20px',
+}));
+
+const Username = styled.span(() => ({
+  fontWeight: 'bold',
+  fontSize: '15px',
+
+}));
+
+const Email = styled.span(() => ({
+  color: '#777',
+  fontSize: '13px',
 }));
 
 const CarouselContainer = styled.div(() => ({
@@ -23,6 +55,7 @@ const Carousel = styled.div(() => ({
     display: 'none',
   },
   position: 'relative',
+  scrollSnapType: 'x mandatory',
 }));
 
 const CarouselItem = styled.div(() => ({
@@ -46,13 +79,15 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  zIndex: 1,
 }));
 
 const PrevButton = styled(Button)`
@@ -64,12 +99,26 @@ const NextButton = styled(Button)`
 `;
 
 const Post = ({ post }) => {
+  const [user, setUser] = useState(null);
   const carouselRef = useRef(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get(`https://jsonplaceholder.typicode.com/users/${post.userId}`);
+        setUser(data);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, [post.userId]);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +127,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -86,6 +135,20 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <PostHeader>
+        {user && (
+          <>
+            <AvatarBadge>{user.name
+  .split(' ')
+  .map(name => name.charAt(0)) // Get the first letter of each name
+  .join('')}</AvatarBadge>
+            <div style={{display:"flex",flexDirection:"column"}}>
+              <Username>{user.name}</Username>
+              <Email>{user.email}</Email>
+            </div>
+          </>
+        )}
+      </PostHeader>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,12 +170,15 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    userId: PropTypes.number.isRequired,
+  }).isRequired,
 };
 
 export default Post;
